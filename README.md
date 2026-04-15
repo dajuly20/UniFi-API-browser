@@ -353,8 +353,69 @@ Other included libraries:
 
 > [!CAUTION]
 > It is important to note that the UniFi API browser tool is a powerful tool that allows access to sensitive data and configuration options on your UniFi controller. It is therefore important you take appropriate security measures, such as limiting access to the tool to trusted individuals. Additionally, you should be aware of the security risks associated with running PHP code on your server.
-> 
+>
 > We **highly recommend** enabling the username/password authentication feature by creating a `config/users.php` based on the included `config/users-template.php` file. When creating passwords and their SHA512 hashes for entry in the `config/users.php` file, make sure to use **strong random passwords**. Please refer to the instructions in the `config/users-template.php` file for further details
+
+#### Apache HTTP Basic Authentication (Alternative Security Layer)
+
+This fork includes an `.htaccess` file that provides an **additional security layer** using Apache's HTTP Basic Authentication. This provides directory-level protection before any PHP code is executed.
+
+**Why use `.htaccess` authentication:**
+- **Defense in depth**: Adds a second authentication layer independent of the PHP application
+- **Early protection**: Blocks unauthorized access at the web server level, before PHP is even invoked
+- **Prevents brute force**: Reduces attack surface by requiring authentication before application logic runs
+- **Simple deployment**: Works with any Apache installation without PHP dependencies
+
+**Configuration:**
+1. The `.htaccess` file references `/etc/apache2/.htpasswd_dashboard` for user credentials
+2. Create the password file using:
+```bash
+htpasswd -c /etc/apache2/.htpasswd_dashboard username
+```
+3. Ensure Apache's `mod_auth_basic` and `mod_authz_user` modules are enabled
+4. Make sure `.htaccess` files are allowed in your Apache configuration (`AllowOverride AuthConfig`)
+
+This authentication method works **in addition to** the application-level `config/users.php` authentication, providing two separate security barriers for maximum protection.
+
+
+### Voucher Creation Script
+
+This repository includes a standalone PHP script (`create_voucher.php`) for programmatically creating UniFi guest vouchers via the API.
+
+#### Features
+- Create vouchers with customizable expiration time
+- Generate single or multiple vouchers in one call
+- Returns voucher details in JSON format
+- Uses the classic UniFi API client
+
+#### Usage
+
+1. Ensure your controller credentials are configured in `config/config.php`
+2. Customize the parameters in `create_voucher.php`:
+   - `$voucher_expiration`: Minutes the voucher is valid after activation (default: 2000)
+   - `$voucher_count`: Number of vouchers to create (default: 1)
+   - `$site_id`: The site where vouchers should be created (default: 'Default')
+
+3. Run the script:
+```bash
+php create_voucher.php
+```
+
+The script will output the newly created voucher(s) in JSON format, including voucher codes and metadata.
+
+#### Example Output
+```json
+[
+  {
+    "code": "12345-67890",
+    "create_time": 1234567890,
+    "duration": 2000,
+    ...
+  }
+]
+```
+
+Note: This script uses the first controller defined in your `config/config.php` file and requires a **classic** controller configuration (username/password authentication).
 
 
 ### Support and Feedback
