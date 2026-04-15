@@ -1,0 +1,5 @@
+#Protect Directory
+AuthName "Des isch geheim oder so!"
+AuthType Basic
+AuthUserFile "/etc/apache2/.htpasswd_dashboard"
+Require valid-user
