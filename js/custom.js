@@ -833,3 +833,135 @@ function cmpVersion(a, b) {
     }
     return 0;
 }
+
+/**
+ * Self-Elevation functionality
+ */
+let is_elevated = false;
+
+/**
+ * Check initial elevation status on page load
+ */
+function checkElevationStatus() {
+    $.ajax({
+        type:     'POST',
+        url:      'elevate.php',
+        dataType: 'json',
+        data: {
+            action: 'check'
+        },
+        success: function (json) {
+            if (json.success) {
+                is_elevated = json.is_elevated;
+                updateElevationUI();
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log('Error checking elevation status:', jqXHR);
+        }
+    });
+}
+
+/**
+ * Update the elevation UI based on current status
+ */
+function updateElevationUI() {
+    if (is_elevated) {
+        $('#elevation_icon').removeClass('fa-user-shield').addClass('fa-crown');
+        $('#elevation_toggle').attr('data-original-title', 'Admin elevated (click to de-elevate)');
+    } else {
+        $('#elevation_icon').removeClass('fa-crown').addClass('fa-user-shield');
+        $('#elevation_toggle').attr('data-original-title', 'Elevate to admin');
+    }
+
+    // Re-initialize tooltip
+    $('#elevation_toggle').tooltip('dispose').tooltip({
+        trigger: 'hover',
+        container: 'body',
+        boundary: 'window'
+    });
+}
+
+/**
+ * Handle elevation toggle click
+ */
+$('#elevation_toggle').on('click', function(e) {
+    e.preventDefault();
+
+    if (is_elevated) {
+        // De-elevate
+        $.ajax({
+            type:     'POST',
+            url:      'elevate.php',
+            dataType: 'json',
+            data: {
+                action: 'de-elevate'
+            },
+            success: function (json) {
+                if (json.success) {
+                    is_elevated = false;
+                    updateElevationUI();
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.log('Error de-elevating:', jqXHR);
+            }
+        });
+    } else {
+        // Show elevation modal
+        $('#elevation_modal').modal('show');
+        $('#elevation_password').val('');
+        $('#elevation_error').addClass('d-none');
+    }
+});
+
+/**
+ * Handle elevation form submission
+ */
+$('#elevation_submit').on('click', function() {
+    let password = $('#elevation_password').val();
+
+    if (!password) {
+        $('#elevation_error').removeClass('d-none').text('Please enter your password');
+        return;
+    }
+
+    $.ajax({
+        type:     'POST',
+        url:      'elevate.php',
+        dataType: 'json',
+        data: {
+            action: 'elevate',
+            password: password
+        },
+        success: function (json) {
+            if (json.success) {
+                is_elevated = true;
+                updateElevationUI();
+                $('#elevation_modal').modal('hide');
+            } else {
+                $('#elevation_error').removeClass('d-none').text(json.message || 'Elevation failed');
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log('Error elevating:', jqXHR);
+            $('#elevation_error').removeClass('d-none').text('An error occurred');
+        }
+    });
+});
+
+/**
+ * Handle Enter key in password field
+ */
+$('#elevation_password').on('keypress', function(e) {
+    if (e.which === 13) {
+        $('#elevation_submit').click();
+    }
+});
+
+/**
+ * Check elevation status when page loads (only if elevation toggle exists)
+ */
+if ($('#elevation_toggle').length > 0) {
+    checkElevationStatus();
+}

@@ -23,14 +23,21 @@
  * IMPORTANT NOTE:
  * If you do not create the users.php file or do not create any user accounts, the API browser tool
  * will be accessible without providing any means of authentication.
+ *
+ * USER ROLES:
+ * - 'user': Regular user with standard access
+ * - 'admin': Administrator with full access (no elevation required)
+ * - 'elevatable': User who can self-elevate to admin when needed
  */
 $users = [
     [
         'user_name' => '', // string, the username
         'password'  => '', // string, the SHA512 hash of the password
+        'role'      => 'user', // string, valid values: 'user', 'admin', 'elevatable'
     ],
     [
         'user_name' => '', // string, the username
         'password'  => '', // string, the SHA512 hash of the password
+        'role'      => 'user', // string, valid values: 'user', 'admin', 'elevatable'
     ],
 ];

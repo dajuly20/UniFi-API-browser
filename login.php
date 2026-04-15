@@ -38,6 +38,8 @@ session_start();
 
 $_SESSION['login_error_message'] = 'user name and password do not match, please try again';
 $_SESSION['logged_in']           = false;
+$_SESSION['user_role']           = '';
+$_SESSION['is_elevated']         = false;
 
 /**
  * load login form data if present, then login to test
@@ -58,7 +60,10 @@ if (isset($_POST['user_name']) && !empty($_POST['user_name']) && isset($_POST['p
                  * we have a matching user_name/password combination
                  */
                 error_log('successful login for user ' . $user_name);
-                $_SESSION['logged_in'] = true;
+                $_SESSION['logged_in']   = true;
+                $_SESSION['user_name']   = $user_name;
+                $_SESSION['user_role']   = isset($user['role']) ? $user['role'] : 'user';
+                $_SESSION['is_elevated'] = false;
             }
         }
 

@@ -51,6 +51,13 @@
                 {% endblock %}
 
                 <ul class="navbar-nav ml-auto">
+                    {% if session.logged_in == true and (session.user_role == 'elevatable' or session.user_role == 'admin') %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="elevation_toggle" data-toggle="tooltip" data-placement="bottom" title="Toggle admin elevation">
+                            <i class="fas fa-user-shield fa-lg" id="elevation_icon"></i>
+                        </a>
+                    </li>
+                    {% endif %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <i class="fas fa-sliders-h fa-lg"></i>
@@ -107,6 +114,10 @@
 
     {% if page not in ['login', 'config_error'] %}
         {% include 'components/about_modal.html.twig' %}
+    {% endif %}
+
+    {% if session.logged_in == true and (session.user_role == 'elevatable' or session.user_role == 'admin') %}
+        {% include 'components/elevation_modal.html.twig' %}
     {% endif %}
 
         <!-- load various Javascript files from CDN -->
